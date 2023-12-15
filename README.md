@@ -1,7 +1,7 @@
-# Buffalo Pongoali
+# Buffalo Pongoalie
 
-Buffalo Pongoali is a homebrew game for Atari 2600.
-It is a combination of Pong and Air-Hockey where two playeres face each other
+Buffalo Pongoalie is a homebrew game for Atari 2600.
+It is a combination of Pong and Air-Hockey, where two playeres face each other
 and the winner is the one who scores the most goals in the opponent's goal.
 
 ## How to play
