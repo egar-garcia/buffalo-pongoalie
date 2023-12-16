@@ -8,7 +8,7 @@ and the winner is the one who scores the most goals in the opponent's goal.
 
 You can find the last built ROM in the [releases](releases) directory,
 which can be played in an Atari 2600 emulator such as
-[Stella](https://stella-emu.github.io/).
+[Stella](https://stella-emu.github.io/) or [Javatari](https://javatari.org/).
 
 ## Controls
 
