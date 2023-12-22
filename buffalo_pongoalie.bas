@@ -95,6 +95,8 @@ end
   dim   tmp1                  =   v
 
   dim   param0                =   w
+  dim   param1                =   x
+  dim   param2                =   y
 
 
   playfield:
@@ -185,26 +187,31 @@ process_collision_ball_playfield
   rem ************************************************************
  
 process_collision_ball_player0
-  if p0firecycle > 0 && p0firecycle < P_MAX_FIRECYCLES then powerballcycle = powerballcycle + POWERBALLCYCLES : gosub play_hit_sound
-  tmp0 = player0x + P_COLLISION_TOLERANCE
-  tmp1 = player0x + P_WIDTH - P_COLLISION_TOLERANCE
-  if ballx <= tmp0 then balldx = BACKWARD
-  if ballx >= tmp1 then balldx = FORWARD
-  tmp0 = player0y - P_HEIGHT + P_COLLISION_TOLERANCE
-  tmp1 = player0y - P_COLLISION_TOLERANCE
-  if bally <= tmp0 then balldy = BACKWARD
-  if bally >= tmp1 then balldy = FORWARD
-  gosub play_ball_bounce_sound
+  param0 = player0x
+  param1 = player0y
+  param2 = p0firecycle
+  gosub process_collision_ball_player
   return
 
 process_collision_ball_player1
-  if p1firecycle > 0 && p1firecycle < P_MAX_FIRECYCLES then powerballcycle = powerballcycle + POWERBALLCYCLES : gosub play_hit_sound
-  tmp0 = player1x + P_COLLISION_TOLERANCE
-  tmp1 = player1x + P_WIDTH - P_COLLISION_TOLERANCE
+  param0 = player1x
+  param1 = player1y
+  param2 = p1firecycle
+  gosub process_collision_ball_player
+
+  return
+
+process_collision_ball_player
+  rem PARAM: param0 - The player's X position
+  rem PARAM: param1 - The player's Y position
+  rem PARAM: param2 - The player's firecycle
+  if 0 < param2 && param2 < P_MAX_FIRECYCLES then powerballcycle = powerballcycle + POWERBALLCYCLES : gosub play_hit_sound
+  tmp0 = param0 + P_COLLISION_TOLERANCE
+  tmp1 = param0 + P_WIDTH - P_COLLISION_TOLERANCE
   if ballx <= tmp0 then balldx = BACKWARD
   if ballx >= tmp1 then balldx = FORWARD
-  tmp0 = player1y - P_HEIGHT + P_COLLISION_TOLERANCE
-  tmp1 = player1y - P_COLLISION_TOLERANCE
+  tmp0 = param1 - P_HEIGHT + P_COLLISION_TOLERANCE
+  tmp1 = param1 - P_COLLISION_TOLERANCE
   if bally <= tmp0 then balldy = BACKWARD
   if bally >= tmp1 then balldy = FORWARD
   gosub play_ball_bounce_sound
@@ -622,7 +629,7 @@ start_game
     $0F
 end
   player0color:
-    $06
+    $08
     $AA
     $AA
     $AA
@@ -636,7 +643,7 @@ end
     $0F
 end
   player1color:
-    $06
+    $08
     $FA
     $FA
     $FA
@@ -662,48 +669,48 @@ stop_game
   gosub set_ball_mid_position
   gosub set_p0_init_position
   gosub set_p1_init_position
-  player0scorecolor = $04
-  player1scorecolor = $04
+  player0scorecolor = $06
+  player1scorecolor = $06
   pfcolors:
-    $04
-    $04
-    $04
-    $04
-    $04
-    $04
-    $04
-    $04
-    $04
-    $04
-    $04
+    $06
+    $06
+    $06
+    $06
+    $06
+    $06
+    $06
+    $06
+    $06
+    $06
+    $06
 end
   player0color:
-    $04
-    $04
-    $04
-    $04
-    $04
-    $04
-    $04
-    $04
-    $04
-    $04
-    $04
-    $04
+    $06
+    $06
+    $06
+    $06
+    $06
+    $06
+    $06
+    $06
+    $06
+    $06
+    $06
+    $06
 end
   player1color:
-    $04
-    $04
-    $04
-    $04
-    $04
-    $04
-    $04
-    $04
-    $04
-    $04
-    $04
-    $04
+    $06
+    $06
+    $06
+    $06
+    $06
+    $06
+    $06
+    $06
+    $06
+    $06
+    $06
+    $06
 end
   return
 
