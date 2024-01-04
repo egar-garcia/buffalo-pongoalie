@@ -1,6 +1,6 @@
   rem Buffalo Pongoalie
   rem Author: Egar Garcia
-  rem Last Revision 2023-12-14
+  rem Last Revision 2024-01-03
 
   include div_mul.asm
 
@@ -114,12 +114,15 @@ end
 end
 
 
-  gosub reset_game
+  gosub clear_sounds
+  gosub stop_game
+  gamestate = MODE_SELECT
+  mode = 0
+  gosub set_mode
 
 mainloop
   gosub handle_sounds
 
-  if switchreset  then gosub reset_game
   if switchselect then gosub handle_select_switch else selectswitchactive = 0
 
   if gamestate = IN_PROGRESS then gosub handle_active_game else gosub handle_stopped_game
@@ -128,24 +131,19 @@ mainloop
   goto mainloop
 
 
-reset_game
-  gosub clear_sounds
-  gosub stop_game
-  gamestate = MODE_SELECT
-  mode = 0
-  gosub set_mode
-  return
-
-
 handle_select_switch
   if selectswitchactive > 0 then return 
   selectswitchactive = 1
-  if gamestate <> MODE_SELECT then gosub reset_game else mode = mode + 1
+  tmp0 = gamestate
+  if tmp0 = MODE_SELECT then mode = mode + 1
+  if tmp0 = IN_PROGRESS then gosub clear_sounds : gosub stop_game : gamestate = MODE_SELECT
+  if tmp0 = ENDED       then gamestate = MODE_SELECT
   gosub set_mode
   return
 
 
 handle_stopped_game
+  if switchreset then gosub start_game : return
   if joy0fire || joy1fire then gosub start_game
   return
 
@@ -153,6 +151,9 @@ handle_stopped_game
 handle_active_game
   rem Pause Game
   if switchbw then return
+
+  rem Restart Game
+  if switchreset then gosub clear_sounds : gosub start_game : return
 
   if goalcyclecounter > 0 then gosub handle_goal : return
   gosub check_for_goal : if goalcyclecounter > 0 then return
