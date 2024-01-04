@@ -10,6 +10,9 @@ You can find the last built ROM in the [releases](releases) directory,
 which can be played in an Atari 2600 emulator such as
 [Stella](https://stella-emu.github.io/) or [Javatari](https://javatari.org/).
 
+Note: You can directly load the rom and play the game in Javatari by following
+this link: https://javatari.org/?rom=https://github.com/egar-garcia/buffalo-pongoalie/raw/main/releases/buffalo_pongoalie-v1.2.bin.
+
 ## Controls
 
 | Control | Functions |
