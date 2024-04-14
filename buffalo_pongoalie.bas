@@ -161,7 +161,7 @@ handle_active_game
   if collision(ball, player0)    then gosub process_collision_ball_player0
   if collision(ball, player1)    then gosub process_collision_ball_player1
   if collision(ball, playfield)  then gosub process_collision_ball_playfield
-  if collision(player0, player1) then process_players_collision
+  if collision(player0, player1) then gosub process_players_collision
 
   gosub process_p0_movement
   gosub process_p1_movement
