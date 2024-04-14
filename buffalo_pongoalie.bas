@@ -1,6 +1,6 @@
   rem Buffalo Pongoalie
   rem Author: Egar Garcia
-  rem Last Revision 2024-01-03
+  rem Last Revision 2024-04-14
 
   include div_mul.asm
 
@@ -846,4 +846,4 @@ play_goal_sound
   rem ************************************************************************
   rem * PLAYER SCORES
   rem ************************************************************************
-  inline include/playerscores.asm
+  inline include/player_scores.asm
