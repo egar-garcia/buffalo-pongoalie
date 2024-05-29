@@ -1,5 +1,5 @@
 ; This minikernel displays two digit scores for each one of the two players.
-; Egar Garcia
+; Author: Egar Garcia
 ; Last Revision 2024-04-14
 
 ; Variables to replace the lives minikernel variables.
