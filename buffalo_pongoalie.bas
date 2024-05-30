@@ -1,6 +1,6 @@
   rem Buffalo Pongoalie
   rem Author: Egar Garcia
-  rem Last Revision 2024-04-14
+  rem Last Revision 2024-05-29
 
   include div_mul.asm
 
@@ -9,10 +9,11 @@
   set romsize 4k
   set smartbranching on
 
-
-  const MODE_SELECT           =   0
-  const IN_PROGRESS           =   1
-  const ENDED                 =   2
+  const SELECT_PRESSED        =   0
+  const RESET_PRESSED         =   1
+  const MODE_SELECT           =   2
+  const IN_PROGRESS           =   3
+  const ENDED                 =   4
 
   const MIN_BALLX             =  22
   const MAX_BALLX             = 141
@@ -66,37 +67,35 @@ end
 
   dim   mode                  =   b
 
-  dim   selectswitchactive    =   c
+  dim   goalcyclecounter      =   c
 
-  dim   goalcyclecounter      =   d
+  dim   balldx                =   d
+  dim   balldy                =   e
+  dim   powerballcycle        =   f
 
-  dim   balldx                =   e
-  dim   balldy                =   f
-  dim   powerballcycle        =   g
+  dim   p0dx                  =   g
+  dim   p0dy                  =   h
+  dim   p0firecycle           =   i
+  dim   p0frm                 =   j
+  dim   p0score               =   k
 
-  dim   p0dx                  =   h
-  dim   p0dy                  =   i
-  dim   p0firecycle           =   j
-  dim   p0frm                 =   k
-  dim   p0score               =   l
+  dim   p1dx                  =   l
+  dim   p1dy                  =   m
+  dim   p1firecycle           =   n
+  dim   p1frm                 =   o
+  dim   p1score               =   p
 
-  dim   p1dx                  =   m
-  dim   p1dy                  =   n
-  dim   p1firecycle           =   o
-  dim   p1frm                 =   p
-  dim   p1score               =   q
+  dim   playerkickoff         =   q
 
-  dim   playerkickoff         =   r
+  dim   aud0timer             =   r
+  dim   aud1timer             =   s
 
-  dim   aud0timer             =   s
-  dim   aud1timer             =   t
+  dim   tmp0                  =   t
+  dim   tmp1                  =   u
 
-  dim   tmp0                  =   u
-  dim   tmp1                  =   v
-
-  dim   param0                =   w
-  dim   param1                =   x
-  dim   param2                =   y
+  dim   param0                =   v
+  dim   param1                =   w
+  dim   param2                =   x
 
 
   playfield:
@@ -122,29 +121,38 @@ end
 
 mainloop
   gosub handle_sounds
-
-  if switchselect then gosub handle_select_switch else selectswitchactive = 0
-
+  if gamestate = SELECT_PRESSED then gosub handle_select_pressed : goto mainloop_draw_screen
+  if gamestate = RESET_PRESSED then gosub handle_reset_pressed : goto mainloop_draw_screen
+  if switchselect then gosub handle_select_switch : goto mainloop_draw_screen
   if gamestate = IN_PROGRESS then gosub handle_active_game else gosub handle_stopped_game
-
+mainloop_draw_screen
   drawscreen
   goto mainloop
 
 
+handle_select_pressed
+  if switchselect then return
+  gamestate = MODE_SELECT
+  return
+
+
+handle_reset_pressed
+  if switchreset then return
+  gamestate = IN_PROGRESS
+  return
+
+
 handle_select_switch
-  if selectswitchactive > 0 then return 
-  selectswitchactive = 1
-  tmp0 = gamestate
-  if tmp0 = MODE_SELECT then mode = mode + 1
-  if tmp0 = IN_PROGRESS then gosub clear_sounds : gosub stop_game : gamestate = MODE_SELECT
-  if tmp0 = ENDED       then gamestate = MODE_SELECT
+  if gamestate = MODE_SELECT then mode = mode + 1
+  if gamestate = IN_PROGRESS then gosub clear_sounds : gosub stop_game
   gosub set_mode
+  gamestate = SELECT_PRESSED
   return
 
 
 handle_stopped_game
-  if switchreset then gosub start_game : return
-  if joy0fire || joy1fire then gosub start_game
+  if switchreset then gosub start_game : gamestate = RESET_PRESSED : return
+  if joy0fire || joy1fire then gosub start_game : gamestate = IN_PROGRESS
   return
 
 
@@ -153,11 +161,12 @@ handle_active_game
   if switchbw then return
 
   rem Restart Game
-  if switchreset then gosub clear_sounds : gosub start_game : return
+  if switchreset then gosub clear_sounds : gosub start_game : gamestate = RESET_PRESSED : return
 
   if goalcyclecounter > 0 then gosub handle_goal : return
   gosub check_for_goal : if goalcyclecounter > 0 then return
 
+  rem Collision handling
   if collision(ball, player0)    then gosub process_collision_ball_player0
   if collision(ball, player1)    then gosub process_collision_ball_player1
   if collision(ball, playfield)  then gosub process_collision_ball_playfield
@@ -607,7 +616,6 @@ kickoff
 
 start_game
   goalcyclecounter = 0
-  gamestate = IN_PROGRESS
   p0score = 0
   p1score = 0
   player0scorecolor = $AA
