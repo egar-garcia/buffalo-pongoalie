@@ -1,6 +1,6 @@
 ; Bitmaps used for the title screen.
 ; Author: Egar Garcia
-; Last Revision 2024-04-14
+; Last Revision 2024-05-29
 
 ColorExpressions
     hex 000f0f0f0f0f0f0f00000000000a0a0a

@@ -1,6 +1,6 @@
   rem Buffalo Pongoalie (Extended)
   rem Author: Egar Garcia
-  rem Last Revision 2024-05-28
+  rem Last Revision 2024-05-29
 
   include div_mul.asm
   include div_mul16.asm
@@ -11,9 +11,12 @@
   set smartbranching on
 
 
-  const MODE_SELECT           =   0
-  const IN_PROGRESS           =   1
-  const ENDED                 =   2
+  const INITIALIZING          =   0
+  const SELECT_PRESSED        =   1
+  const RESET_PRESSED         =   2
+  const MODE_SELECT           =   3
+  const IN_PROGRESS           =   4
+  const ENDED                 =   5
 
   const MIN_BALLX             =  22
   const MAX_BALLX             = 141
@@ -65,37 +68,35 @@
   dim   max_score_mode        =   b
   dim   goal_size_mode        =   c
 
-  dim   selectswitchactive    =   d
+  dim   goalcyclecounter      =   d
 
-  dim   goalcyclecounter      =   e
+  dim   balldx                =   e
+  dim   balldy                =   f
+  dim   powerballcycle        =   g
 
-  dim   balldx                =   f
-  dim   balldy                =   g
-  dim   powerballcycle        =   h
+  dim   p0dx                  =   h
+  dim   p0dy                  =   i
+  dim   p0firecycle           =   j
+  dim   p0frm                 =   k
+  dim   p0score               =   l
 
-  dim   p0dx                  =   i
-  dim   p0dy                  =   j
-  dim   p0firecycle           =   k
-  dim   p0frm                 =   l
-  dim   p0score               =   m
+  dim   p1dx                  =   m
+  dim   p1dy                  =   n
+  dim   p1firecycle           =   o
+  dim   p1frm                 =   p
+  dim   p1score               =   q
 
-  dim   p1dx                  =   n
-  dim   p1dy                  =   o
-  dim   p1firecycle           =   p
-  dim   p1frm                 =   q
-  dim   p1score               =   r
+  dim   playerkickoff         =   r
 
-  dim   playerkickoff         =   s
+  dim   aud0timer             =   s
+  dim   aud1timer             =   t
 
-  dim   aud0timer             =   t
-  dim   aud1timer             =   u
+  dim   tmp0                  =   u
+  dim   tmp1                  =   v
 
-  dim   tmp0                  =   v
-  dim   tmp1                  =   w
-
-  dim   param0                =   x
-  dim   param1                =   y
-  dim   param2                =   z
+  dim   param0                =   w
+  dim   param1                =   x
+  dim   param2                =   y
 
 
   rem ************************************************************************
@@ -106,7 +107,7 @@
 
   rem gosub clear_sounds bank2
   gosub stop_game bank2
-  gamestate = MODE_SELECT
+  gamestate = INITIALIZING
   max_score_mode = 0
   goal_size_mode = 0
   gosub set_mode bank2
@@ -114,24 +115,44 @@
 
 mainloop
   gosub handle_sounds bank2
-  if switchselect then gosub handle_select_switch bank1 else selectswitchactive = 0
+  if gamestate = INITIALIZING then gosub handle_initializing bank1 : goto mainloop_draw_screen bank1
+  if gamestate = SELECT_PRESSED then gosub handle_select_pressed bank1 : goto mainloop_draw_screen bank1
+  if gamestate = RESET_PRESSED then gosub handle_reset_pressed bank1 : goto mainloop_draw_screen bank1
+  if switchselect then gosub handle_select_switch bank1 : goto mainloop_draw_screen bank1
   if gamestate = IN_PROGRESS then gosub handle_active_game bank1 else gosub handle_stopped_game bank1
+mainloop_draw_screen
   gosub draw_screen bank2
   goto mainloop bank1
 
 
-handle_select_switch
-  if selectswitchactive > 0 then return thisbank 
-  selectswitchactive = 1
+handle_initializing
+  if switchselect || switchreset then return thisbank
+  if joy0fire || joy1fire then return thisbank
+  gamestate = MODE_SELECT
+  return thisbank
 
+
+handle_select_pressed
+  if switchselect then return thisbank
+  gamestate = MODE_SELECT
+  return thisbank
+
+
+handle_reset_pressed
+  if switchreset then return thisbank
+  gamestate = IN_PROGRESS
+  return thisbank
+
+
+handle_select_switch
   if gamestate = MODE_SELECT then max_score_mode = max_score_mode + 1
-  if gamestate = IN_PROGRESS then gosub clear_sounds bank2 : gosub stop_game bank2 : gamestate = MODE_SELECT
-  if gamestate = ENDED       then gamestate = MODE_SELECT
+  if gamestate = IN_PROGRESS then gosub clear_sounds bank2 : gosub stop_game bank2
 
   if max_score_mode >= NUM_MAX_SCORE_MODES then max_score_mode = 0 : goal_size_mode = goal_size_mode + 1
   if goal_size_mode >= NUM_GOAL_SIZE_MODES then goal_size_mode = 0
 
   gosub set_mode bank2
+  gamestate = SELECT_PRESSED
   return thisbank
 
 
@@ -140,11 +161,12 @@ handle_active_game
   if switchbw then return thisbank
 
   rem Restart Game
-  if switchreset then gosub clear_sounds bank2 : gosub start_game bank2 : return thisbank
+  if switchreset then gosub clear_sounds bank2 : gosub start_game bank2 : gamestate = RESET_PRESSED : return thisbank
 
   if goalcyclecounter > 0 then gosub handle_goal bank2 : return thisbank
   gosub check_for_goal bank2 : if goalcyclecounter > 0 then return thisbank
 
+  rem Collision handling
   if collision(ball, player0)    then param0 = player0x : param1 = player0y : param2 = p0firecycle : gosub process_collision_ball_player bank1
   if collision(ball, player1)    then param0 = player1x : param1 = player1y : param2 = p1firecycle : gosub process_collision_ball_player bank1
   if collision(ball, playfield)  then gosub process_collision_ball_playfield bank1
@@ -164,8 +186,8 @@ handle_active_game
 
 
 handle_stopped_game
-  if switchreset then gosub start_game bank2 : return thisbank
-  if joy0fire || joy1fire then gosub start_game bank2
+  if switchreset then gosub start_game bank2 : gamestate = RESET_PRESSED : return thisbank
+  if joy0fire || joy1fire then gosub start_game bank2 : gamestate = IN_PROGRESS
   return thisbank
 
 
@@ -467,7 +489,6 @@ end
 
 start_game
   goalcyclecounter = 0
-  gamestate = IN_PROGRESS
   p0score = 0
   p1score = 0
 
@@ -522,6 +543,7 @@ end
     $0F
     $0F
 end
+
   return otherbank
 
 
