@@ -1,10 +1,10 @@
 ; Script used to display the title screen.
 ; Author: Egar Garcia
-; Last Revision 2024-05-29
+; Last Revision 2024-06-03
 
   lda #$00
-  sta u
-  sta v
+  sta tmp0
+  sta tmp1
   sta COLUBK
   sta COLUPF
   sta CTRLPF
@@ -34,7 +34,7 @@ LVBlank
   sta VBLANK
 
   ; VISIBLE FRAME (192 lines)
-  ldx u
+  ldx tmp0
   ldy #191
 LVScan
   txa
@@ -94,13 +94,13 @@ LVOver
   lda INPT5
   bpl EndTitle
 
-  inc v
-  lda v
+  inc tmp1
+  lda tmp1
   cmp #8
   bne SkipCountIncrease
   lda #0
-  sta v
-  inc u
+  sta tmp1
+  inc tmp0
 SkipCountIncrease
   jmp NextFrame
 
