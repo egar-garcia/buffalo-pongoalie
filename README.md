@@ -6,12 +6,14 @@ and the winner is the one who scores the most goals in the opponent's goal.
 
 ## How to play
 
-You can find the last built ROM in the [releases](releases) directory,
+You can find the last built ROMs in the [releases](releases/latest) directory,
 which can be played in an Atari 2600 emulator such as
 [Stella](https://stella-emu.github.io/) or [Javatari](https://javatari.org/).
 
 Note: You can directly load the rom and play the game in Javatari by following
-this link: https://javatari.org/?rom=https://github.com/egar-garcia/buffalo-pongoalie/raw/main/releases/buffalo_pongoalie-v1.2.bin.
+any of these links:
+* Basic 4kB version: https://javatari.org/?rom=https://github.com/egar-garcia/buffalo-pongoalie/releases/download/v1.0/buffalo_pongoalie.bin.
+* Extended 8kB version: https://javatari.org/?rom=https://github.com/egar-garcia/buffalo-pongoalie/releases/download/v1.0/buffalo_pongoalie-ext.bin.
 
 ## Controls
 
@@ -27,7 +29,7 @@ this link: https://javatari.org/?rom=https://github.com/egar-garcia/buffalo-pong
 | Joystick 2 Left | Player 2 Left (if Player 2 is not controlled by the CPU) |
 | Joystick 2 Right | Player 2 Right (if Player 2 is not controlled by the CPU) |
 | Joystick 2 Button | Player 2 Hits (if Player 2 is not controlled by the CPU), Start Game |
-| Select Game | Mode Selection, for the number of goals a player needs to score to win the game |
+| Select Game | Mode Selection, for the number of goals a player needs to score to win the game. In the extended version of the game, additionaly, the goal size can be selected |
 | Reset Game | Start or Re-start the game in the current mode |
 | Color TV | Resume Game (if the game is paused) |
 | Black/White TV | Pause Game  (if the game is in progress) |
