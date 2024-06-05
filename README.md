@@ -6,8 +6,8 @@ and the winner is the one who scores the most goals in the opponent's goal.
 
 ## How to play
 
-You can find the last built ROMs in the [releases](releases/latest) directory,
-which can be played in an Atari 2600 emulator such as
+You can find the last built ROMs in the [releases](https://github.com/egar-garcia/buffalo-pongoalie/releases/latest)
+directory, which can be played in an Atari 2600 emulator such as
 [Stella](https://stella-emu.github.io/) or [Javatari](https://javatari.org/).
 
 Note: You can directly load the rom and play the game in Javatari by following
