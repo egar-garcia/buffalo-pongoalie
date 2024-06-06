@@ -12,8 +12,8 @@ directory, which can be played in an Atari 2600 emulator such as
 
 Note: You can directly load the rom and play the game in Javatari by following
 any of these links:
-* Basic 4kB version: https://javatari.org/?rom=https://github.com/egar-garcia/buffalo-pongoalie/releases/download/v1.0/buffalo_pongoalie.bin.
-* Extended 8kB version: https://javatari.org/?rom=https://github.com/egar-garcia/buffalo-pongoalie/releases/download/v1.0/buffalo_pongoalie-ext.bin.
+* Basic 4kB version: https://javatari.org/?rom=https://github.com/egar-garcia/buffalo-pongoalie/releases/download/v1.1/buffalo_pongoalie.bin.
+* Extended 8kB version: https://javatari.org/?rom=https://github.com/egar-garcia/buffalo-pongoalie/releases/download/v1.1/buffalo_pongoalie-ext.bin.
 
 ## Controls
 
