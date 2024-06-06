@@ -1,6 +1,6 @@
 ; This minikernel displays two digit scores for each one of the two players.
 ; Author: Egar Garcia
-; Last Revision 2024-04-14
+; Last Revision 2024-06-05
 
 ; Variables to replace the lives minikernel variables.
 player0score = $f2 ; BCD
@@ -59,25 +59,25 @@ minikernel
 
   ; Setting up the players' positions
   sta WSYNC                 ; waiting for the beginning of a new line
-  lda #$02                  ; 2  (02) two copies - medium size for players
-  sta NUSIZ0                ; 3  (05)  
-  sta NUSIZ1                ; 3  (08) 
-  lda player0scorecolor     ; 3  (11)  
+  lda #$04                  ; 2  (02) two copies - medium size for players
+  sta NUSIZ0                ; 3  (05)
+  sta NUSIZ1                ; 3  (08)
+  lda player0scorecolor     ; 3  (11)
   sta COLUP0                ; 3  (14)
-  lda player1scorecolor     ; 3  (17)  
+  lda player1scorecolor     ; 3  (17)
   sta COLUP1                ; 3  (20)
 
-  sleep 20                  ;20  (40)
-  sta RESP0                 ; 3  (43) reset position for player0 
-  sta RESP1                 ; 3  (46) reset position for player1
-  lda #$E0                  ; 2  (48) moving 2 machine cycles (6 color clocks) right 
-  sta HMP0                  ; 3  (51) set horizontal motion of player0
-  lda #$00                  ; 2  (53) A := 0 to turn off vertical delay
-  sta HMP1                  ; 3  (56) no horizontal motion for player1
-  sta VDELP0                ; 3  (59) display player0
-  sta VDELP1                ; 3  (62) display player1
-  sleep 4                   ; 2  (66) 
-  ldy #7                    ; 2  (68) 8 lines to display per digits 
+  sleep 13                  ;13  (33)
+  sta RESP0                 ; 3  (36) reset position for player0
+  sta RESP1                 ; 3  (39) reset position for player1
+  lda #$D0                  ; 2  (41) moving 2 machine cycles (6 color clocks) right
+  sta HMP0                  ; 3  (44) set horizontal motion of player0
+  lda #$E0                  ; 2  (46) A := 0 to turn off vertical delay
+  sta HMP1                  ; 3  (49) no horizontal motion for player1
+  sta VDELP0                ; 3  (52) display player0
+  sta VDELP1                ; 3  (55) display player1
+  sleep 11                  ;11  (66)
+  ldy #7                    ; 2  (68) 8 lines to display per digits
   sty temp7                 ; 3  (71) temp7 := 7
   sta HMOVE                 ; 3  (74) horizontal movement has to be done during horizontal blank
 
