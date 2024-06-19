@@ -1,6 +1,6 @@
   rem Buffalo Pongoalie (Extended)
   rem Author: Egar Garcia
-  rem Last Revision 2024-05-29
+  rem Last Revision 2024-06-18
 
   include div_mul.asm
   include div_mul16.asm
@@ -68,61 +68,79 @@
   dim   max_score_mode        =   b
   dim   goal_size_mode        =   c
 
-  dim   goalcyclecounter      =   d
+  dim   max_score             =   d
 
-  dim   balldx                =   e
-  dim   balldy                =   f
-  dim   powerballcycle        =   g
+  dim   goalcyclecounter      =   e
 
-  dim   p0dx                  =   h
-  dim   p0dy                  =   i
-  dim   p0firecycle           =   j
-  dim   p0frm                 =   k
-  dim   p0score               =   l
+  dim   balldx                =   f
+  dim   balldy                =   g
+  dim   powerballcycle        =   h
 
-  dim   p1dx                  =   m
-  dim   p1dy                  =   n
-  dim   p1firecycle           =   o
-  dim   p1frm                 =   p
-  dim   p1score               =   q
+  dim   p0dx                  =   i
+  dim   p0dy                  =   j
+  dim   p0firecycle           =   k
+  dim   p0frm                 =   l
+  dim   p0score               =   m
 
-  dim   playerkickoff         =   r
+  dim   p1dx                  =   n
+  dim   p1dy                  =   o
+  dim   p1firecycle           =   p
+  dim   p1frm                 =   q
+  dim   p1score               =   r
 
-  dim   aud0timer             =   s
-  dim   aud1timer             =   t
+  dim   playerkickoff         =   s
 
-  dim   tmp0                  =   u
-  dim   tmp1                  =   v
+  dim   aud0timer             =   t
+  dim   aud1timer             =   u
 
-  dim   param0                =   w
-  dim   param1                =   x
-  dim   param2                =   y
+  dim   tmp0                  =   v
+  dim   tmp1                  =   w
 
-
-  rem ************************************************************************
-  rem * TITLE SCREEN
-  rem ************************************************************************
-  inline include/title_screen.asm
+  dim   param0                =   x
+  dim   param1                =   y
+  dim   param2                =   z
 
 
-  rem gosub clear_sounds bank2
-  gosub stop_game bank2
+  data max_scores
+    5, 7, 9, 11, 21, 1, 3
+end
+
+  data min_goal_limits
+  40, 32, 24, 16
+end
+
+  data max_goal_limits
+  55, 63, 71, 79 
+end
+
+
+  rem Going to the title screen
+  goto title_screen bank2
+
+
+  rem ************************************************************
+  rem * MAIN GAME
+  rem ************************************************************
+
+main_game
+  gosub clear_sounds bank1
+  gosub stop_game bank1
   gamestate = INITIALIZING
   max_score_mode = 0
   goal_size_mode = 0
-  gosub set_mode bank2
+  gosub set_mode bank1
 
 
-mainloop
-  gosub handle_sounds bank2
+main_loop
+  gosub handle_sounds bank1
   if gamestate = INITIALIZING then gosub handle_initializing bank1 : goto mainloop_draw_screen bank1
   if gamestate = SELECT_PRESSED then gosub handle_select_pressed bank1 : goto mainloop_draw_screen bank1
   if gamestate = RESET_PRESSED then gosub handle_reset_pressed bank1 : goto mainloop_draw_screen bank1
-  if switchselect then gosub handle_select_switch bank1 : goto mainloop_draw_screen bank1
+  if switchselect then gosub handle_select_action bank1 : goto mainloop_draw_screen bank1
   if gamestate = IN_PROGRESS then gosub handle_active_game bank1 else gosub handle_stopped_game bank1
 mainloop_draw_screen
   gosub draw_screen bank2
-  goto mainloop bank1
+  goto main_loop bank1
 
 
 handle_initializing
@@ -144,14 +162,14 @@ handle_reset_pressed
   return thisbank
 
 
-handle_select_switch
+handle_select_action
   if gamestate = MODE_SELECT then max_score_mode = max_score_mode + 1
-  if gamestate = IN_PROGRESS then gosub clear_sounds bank2 : gosub stop_game bank2
+  if gamestate = IN_PROGRESS then gosub clear_sounds bank1 : gosub stop_game bank1
 
   if max_score_mode >= NUM_MAX_SCORE_MODES then max_score_mode = 0 : goal_size_mode = goal_size_mode + 1
   if goal_size_mode >= NUM_GOAL_SIZE_MODES then goal_size_mode = 0
 
-  gosub set_mode bank2
+  gosub set_mode bank1
   gamestate = SELECT_PRESSED
   return thisbank
 
@@ -161,10 +179,10 @@ handle_active_game
   if switchbw then return thisbank
 
   rem Restart Game
-  if switchreset then gosub clear_sounds bank2 : gosub start_game bank2 : gamestate = RESET_PRESSED : return thisbank
+  if switchreset then gosub clear_sounds bank1 : gosub start_game bank1 : gamestate = RESET_PRESSED : return thisbank
 
-  if goalcyclecounter > 0 then gosub handle_goal bank2 : return thisbank
-  gosub check_for_goal bank2 : if goalcyclecounter > 0 then return thisbank
+  if goalcyclecounter > 0 then gosub handle_goal bank1 : return thisbank
+  gosub check_for_goal bank1 : if goalcyclecounter > 0 then return thisbank
 
   rem Collision handling
   if collision(ball, player0)    then param0 = player0x : param1 = player0y : param2 = p0firecycle : gosub process_collision_ball_player bank1
@@ -173,12 +191,12 @@ handle_active_game
   if collision(player0, player1) then gosub process_players_collision bank1
 
   rem Player0 movement
-  if switchleftb then gosub set_p0_player_movement bank2 else gosub set_p0_cpu_movement bank2
-  gosub perform_p0_movement bank2
+  if switchleftb then gosub set_p0_player_movement bank1 else gosub set_p0_cpu_movement bank1
+  gosub perform_p0_movement bank1
 
   rem Player1 movement
-  if switchrightb then gosub set_p1_player_movement bank2 else gosub set_p1_cpu_movement bank2
-  gosub perform_p1_movement bank2
+  if switchrightb then gosub set_p1_player_movement bank1 else gosub set_p1_cpu_movement bank1
+  gosub perform_p1_movement bank1
 
   gosub process_ball_movement bank1
 
@@ -186,8 +204,8 @@ handle_active_game
 
 
 handle_stopped_game
-  if switchreset then gosub start_game bank2 : gamestate = RESET_PRESSED : return thisbank
-  if joy0fire || joy1fire then gosub start_game bank2 : gamestate = IN_PROGRESS
+  if switchreset then gosub start_game bank1 : gamestate = RESET_PRESSED : return thisbank
+  if joy0fire || joy1fire then gosub start_game bank1 : gamestate = IN_PROGRESS
   return thisbank
 
 
@@ -200,7 +218,7 @@ process_collision_ball_playfield
   if ballx > MAX_BALLX then balldx = BACKWARD
   if bally < MIN_BALLY then balldy = FORWARD
   if bally > MAX_BALLY then balldy = BACKWARD
-  gosub play_ball_bounce_sound bank2
+  gosub play_ball_bounce_sound bank1
   return thisbank
 
 
@@ -212,7 +230,7 @@ process_collision_ball_player
   rem PARAM: param0 - The player's X position
   rem PARAM: param1 - The player's Y position
   rem PARAM: param2 - The player's firecycle
-  if 0 < param2 && param2 < P_MAX_FIRECYCLES then powerballcycle = powerballcycle + POWERBALLCYCLES : gosub play_hit_sound bank2
+  if 0 < param2 && param2 < P_MAX_FIRECYCLES then powerballcycle = powerballcycle + POWERBALLCYCLES : gosub play_hit_sound bank1
   tmp0 = param0 + P_COLLISION_TOLERANCE
   tmp1 = param0 + P_WIDTH - P_COLLISION_TOLERANCE
   if ballx <= tmp0 then balldx = BACKWARD
@@ -221,7 +239,7 @@ process_collision_ball_player
   tmp1 = param1 - P_COLLISION_TOLERANCE
   if bally <= tmp0 then balldy = BACKWARD
   if bally >= tmp1 then balldy = FORWARD
-  gosub play_ball_bounce_sound bank2
+  gosub play_ball_bounce_sound bank1
   return thisbank
 
 
@@ -240,7 +258,7 @@ process_players_collision
   if player0y < player1y then player0y = player0y - tmp1 : player1y = player1y + tmp0
   if player0y > player1y then player0y = player0y + tmp1 : player1y = player1y - tmp0
 
-  if tmp0 >= HIT_DISPLACEMENT || tmp1 >= HIT_DISPLACEMENT then gosub play_hit_sound bank2 else gosub play_ball_bounce_sound bank2
+  if tmp0 >= HIT_DISPLACEMENT || tmp1 >= HIT_DISPLACEMENT then gosub play_hit_sound bank1 else gosub play_ball_bounce_sound bank1
   return thisbank
 
 
@@ -259,52 +277,14 @@ process_single_ball_movement
   return thisbank
 
 
-  rem ************************************************************************
-  rem * TITLE SCREEN
-  rem ************************************************************************
-  inline include/title_screen_bitmaps.asm
-
-
-  rem ************************************************************
-  rem * 2ND BANK
-  rem ************************************************************
-  bank 2
-
-  data max_scores
-    5, 7, 9, 11, 21, 1, 3
-end
-
-  data scores_display_map
-    $A0, $A1, $A2, $A3, $A4, $A5, $A6, $A7, $A8, $A9,
-    $10, $11, $12, $13, $14, $15, $16, $17, $18, $19,
-    $20, $21
-end
-
-  data min_goal_limits
-  40, 32, 24, 16
-end
-  data max_goal_limits
-  55, 63, 71, 79 
-end
-
-
-  rem ************************************************************
-  rem * DRAW SCREEN
-  rem ************************************************************
-
-draw_screen
-  drawscreen
-  return otherbank
-
-
   rem ************************************************************
   rem * MODE SELECTION
   rem ************************************************************
 
 set_mode
-  gosub set_playfield bank2
-  gosub display_max_score bank2
-  return otherbank
+  max_score = max_scores[max_score_mode]
+  gosub set_playfield bank1
+  return thisbank
 
 
 set_playfield
@@ -363,13 +343,6 @@ end
   return thisbank
 
 
-display_max_score
-  player1score = $AA
-  tmp0 = max_scores[max_score_mode]
-  player0score = scores_display_map[tmp0]
-  return thisbank
-
-
   rem ************************************************************
   rem * STOP GAME
   rem ************************************************************
@@ -377,11 +350,8 @@ display_max_score
 stop_game
   balldx = NO_MOVE
   balldy = NO_MOVE
-  gosub set_ball_mid_position bank2
-  gosub set_players_init_positions bank2
-
-  player0scorecolor = $06
-  player1scorecolor = $06
+  gosub set_ball_mid_position bank1
+  gosub set_players_init_positions bank1
 
   pfcolors:
     $06
@@ -424,7 +394,7 @@ end
     $06
     $06
 end
-  return otherbank
+  return thisbank
 
 
   rem ************************************************************
@@ -492,15 +462,10 @@ start_game
   p0score = 0
   p1score = 0
 
-  player0scorecolor = $AA
-  player1scorecolor = $FA
-  player0score = scores_display_map[0]
-  player1score = scores_display_map[0]
-
-  gosub set_players_init_positions bank2
+  gosub set_players_init_positions bank1
 
   playerkickoff = rand &01
-  gosub kickoff bank2
+  gosub kickoff bank1
 
   pfcolors:
     $0F
@@ -544,7 +509,7 @@ end
     $0F
 end
 
-  return otherbank
+  return thisbank
 
 
   rem ************************************************************
@@ -568,13 +533,13 @@ kickoff
   rem ************************************************************
 
 check_for_goal
-  if bally < min_goal_limits[goal_size_mode] || bally > max_goal_limits[goal_size_mode] then return otherbank
-  if ballx >= MIN_BALLX && ballx <= MAX_BALLX then return otherbank
-  if ballx < MIN_BALLX then gosub record_p1_goal bank2
-  if ballx > MAX_BALLX then gosub record_p0_goal bank2
+  if bally < min_goal_limits[goal_size_mode] || bally > max_goal_limits[goal_size_mode] then return thisbank
+  if ballx >= MIN_BALLX && ballx <= MAX_BALLX then return thisbank
+  if ballx < MIN_BALLX then gosub record_p1_goal bank1
+  if ballx > MAX_BALLX then gosub record_p0_goal bank1
   goalcyclecounter = GOAL_NO_CYCLES
-  gosub play_goal_sound bank2
-  return otherbank
+  gosub play_goal_sound bank1
+  return thisbank
 
 
   rem ************************************************************
@@ -583,9 +548,9 @@ check_for_goal
 
 handle_goal
   goalcyclecounter = goalcyclecounter - 1
-  if goalcyclecounter > 0 then return otherbank
+  if goalcyclecounter > 0 then return thisbank
 
-  if p0score >= max_scores[max_score_mode] || p1score >= max_scores[max_score_mode] then gosub stop_game bank2 : gamestate = ENDED : return otherbank
+  if p0score >= max_score || p1score >= max_score then gosub stop_game bank1 : gamestate = ENDED : return thisbank
 
   pfcolors:
     $0F
@@ -600,14 +565,13 @@ handle_goal
     $0F
     $0F
 end
-  gosub set_players_init_positions bank2
-  gosub kickoff bank2
-  return otherbank
+  gosub set_players_init_positions bank1
+  gosub kickoff bank1
+  return thisbank
 
 record_p0_goal
   playerkickoff = 1
   p0score = p0score + 1
-  player0score = scores_display_map[p0score]
   pfcolors:
     $AE
     $AE
@@ -627,7 +591,6 @@ end
 record_p1_goal
   playerkickoff = 0
   p1score = p1score + 1
-  player1score = scores_display_map[p1score]
   pfcolors:
     $FA
     $FA
@@ -656,7 +619,7 @@ set_p0_player_movement
   if joy0right then p0dx = FORWARD
   if joy0up    then p0dy = BACKWARD
   if joy0down  then p0dy = FORWARD
-  return otherbank
+  return thisbank
 
 
 set_p0_cpu_movement
@@ -664,17 +627,17 @@ set_p0_cpu_movement
   p0dy = NO_MOVE
   param0 = player0y - P_WIDTH / 2
 
-  if balldx = BACKWARD then param1 = rand : param2 = rand : gosub set_p0_cpu_intercept_ball bank2 : return otherbank
+  if balldx = BACKWARD then param1 = rand : param2 = rand : gosub set_p0_cpu_intercept_ball bank1 : return thisbank
 
   tmp0 = player0x + P_WIDTH
-  if ballx < tmp0 && bally > param0 then p0dy = BACKWARD : return otherbank
-  if ballx < tmp0 && bally < param0 then p0dy = FORWARD  : return otherbank
+  if ballx < tmp0 && bally > param0 then p0dy = BACKWARD : return thisbank
+  if ballx < tmp0 && bally < param0 then p0dy = FORWARD  : return thisbank
 
   if player0x > INIT_P0X then p0dx = BACKWARD
   if player0x < INIT_P0X then p0dx = FORWARD
   if player0y > INIT_P0Y then p0dy = BACKWARD
   if player0y < INIT_P0Y then p0dy = FORWARD
-  return otherbank
+  return thisbank
 
 
 set_p0_cpu_intercept_ball
@@ -717,7 +680,7 @@ perform_p0_movement
     %10000001
     %10000001
 end
-  if tmp0 = 1 then return otherbank
+  if tmp0 = 1 then return thisbank
 
   if p0dx <> NO_MOVE || p0dy <> NO_MOVE then p0frm = p0frm + 1
   if p0frm >= 20 then p0frm = 0
@@ -749,7 +712,7 @@ end
     %10000001
     %10000001
 end
-  return otherbank
+  return thisbank
 
 
   rem ************************************************************
@@ -764,7 +727,7 @@ set_p1_player_movement
   if joy1right then p1dx = FORWARD
   if joy1up    then p1dy = BACKWARD
   if joy1down  then p1dy = FORWARD
-  return otherbank
+  return thisbank
 
 
 set_p1_cpu_movement
@@ -772,16 +735,16 @@ set_p1_cpu_movement
   p1dy = NO_MOVE
   param0 = player1y - P_WIDTH / 2
 
-  if balldx = FORWARD then param1 = rand : param2 = rand : gosub set_p1_cpu_intercept_ball bank2 : return otherbank
+  if balldx = FORWARD then param1 = rand : param2 = rand : gosub set_p1_cpu_intercept_ball bank1 : return thisbank
 
-  if ballx > player1x && bally > param0 then p1dy = BACKWARD : return otherbank
-  if ballx > player1x && bally < param0 then p1dy = FORWARD  : return otherbank
+  if ballx > player1x && bally > param0 then p1dy = BACKWARD : return thisbank
+  if ballx > player1x && bally < param0 then p1dy = FORWARD  : return thisbank
 
   if player1x > INIT_P1X then p1dx = BACKWARD
   if player1x < INIT_P1X then p1dx = FORWARD
   if player1y > INIT_P1Y then p1dy = BACKWARD
   if player1y < INIT_P1Y then p1dy = FORWARD
-  return otherbank
+  return thisbank
 
 
 set_p1_cpu_intercept_ball
@@ -823,7 +786,7 @@ perform_p1_movement
     %10000001
     %10000001
 end
-  if tmp0 = 1 then return otherbank
+  if tmp0 = 1 then return thisbank
 
   if p1dx <> NO_MOVE || p1dy <> NO_MOVE then p1frm = p1frm + 1
   if p1frm >= 20 then p1frm = 0
@@ -855,7 +818,7 @@ end
     %10000001
     %10000001
 end
-  return otherbank
+  return thisbank
 
 
   rem ************************************************************
@@ -864,16 +827,16 @@ end
 
 handle_sounds
   if aud0timer > 1 then aud0timer = aud0timer - 1
-  if aud0timer = 1 then aud0timer = 0 : gosub clear_sound0 bank2
+  if aud0timer = 1 then aud0timer = 0 : gosub clear_sound0 bank1
   if aud1timer > 1 then aud1timer = aud1timer - 1
-  if aud1timer = 1 then aud1timer = 0 : gosub clear_sound1 bank2
-  return otherbank
+  if aud1timer = 1 then aud1timer = 0 : gosub clear_sound1 bank1
+  return thisbank
 
 
 clear_sounds
-  gosub clear_sound0 bank2
-  gosub clear_sound1 bank2
-  return otherbank
+  gosub clear_sound0 bank1
+  gosub clear_sound1 bank1
+  return thisbank
 
 
 clear_sound0
@@ -895,7 +858,7 @@ play_ball_bounce_sound
   AUDC0 = 10
   AUDF0 = 20
   aud0timer = 5
-  return otherbank
+  return thisbank
 
 
 play_hit_sound
@@ -903,7 +866,7 @@ play_hit_sound
   AUDC1 = 15
   AUDF1 = 31
   aud1timer = 10
-  return otherbank
+  return thisbank
 
 
 play_goal_sound
@@ -914,7 +877,45 @@ play_goal_sound
   return thisbank
 
 
+  rem ************************************************************
+  rem * 2ND BANK
+  rem ************************************************************
+  bank 2
+
+  data scores_display_map
+    $A0, $A1, $A2, $A3, $A4, $A5, $A6, $A7, $A8, $A9,
+    $10, $11, $12, $13, $14, $15, $16, $17, $18, $19,
+    $20, $21
+end
+
+  rem ************************************************************
+  rem * DRAW SCREEN
+  rem ************************************************************
+
+draw_screen
+  rem Setting score colors
+  if gamestate = IN_PROGRESS then player0scorecolor = $AA : player1scorecolor = $FA else player0scorecolor = $06 : player1scorecolor = $06
+
+  rem Displaying scores
+  if gamestate = IN_PROGRESS || gamestate = ENDED then player0score = scores_display_map[p0score] : player1score = scores_display_map[p1score] : goto draw_screen_performing bank2
+  if gamestate = MODE_SELECT || gamestate = SELECT_PRESSED then player0score = scores_display_map[max_score] : player1score = $AA : goto draw_screen_performing bank2
+  player0score = $AA
+  player1score = $AA
+
+draw_screen_performing
+  drawscreen
+  return otherbank
+
   rem ************************************************************************
-  rem * PLAYER SCORES
+  rem * PLAYER SCORES MINIKERNEL
   rem ************************************************************************
   inline include/player_scores.asm
+
+
+  rem ************************************************************************
+  rem * TITLE SCREEN
+  rem ************************************************************************
+title_screen
+  inline include/title_screen.asm
+  goto main_game bank1
+  inline include/title_screen_bitmaps.asm
