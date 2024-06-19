@@ -123,90 +123,90 @@ end
   rem ************************************************************
 
 main_game
-  gosub clear_sounds bank1
-  gosub stop_game bank1
+  gosub clear_sounds
+  gosub stop_game
   gamestate = INITIALIZING
   max_score_mode = 0
   goal_size_mode = 0
-  gosub set_mode bank1
+  gosub set_mode
 
 
 main_loop
-  gosub handle_sounds bank1
-  if gamestate = INITIALIZING then gosub handle_initializing bank1 : goto mainloop_draw_screen bank1
-  if gamestate = SELECT_PRESSED then gosub handle_select_pressed bank1 : goto mainloop_draw_screen bank1
-  if gamestate = RESET_PRESSED then gosub handle_reset_pressed bank1 : goto mainloop_draw_screen bank1
-  if switchselect then gosub handle_select_action bank1 : goto mainloop_draw_screen bank1
-  if gamestate = IN_PROGRESS then gosub handle_active_game bank1 else gosub handle_stopped_game bank1
+  gosub handle_sounds
+  if gamestate = INITIALIZING then gosub handle_initializing : goto mainloop_draw_screen
+  if gamestate = SELECT_PRESSED then gosub handle_select_pressed : goto mainloop_draw_screen
+  if gamestate = RESET_PRESSED then gosub handle_reset_pressed : goto mainloop_draw_screen
+  if switchselect then gosub handle_select_action : goto mainloop_draw_screen
+  if gamestate = IN_PROGRESS then gosub handle_active_game else gosub handle_stopped_game
 mainloop_draw_screen
   gosub draw_screen bank2
-  goto main_loop bank1
+  goto main_loop
 
 
 handle_initializing
-  if switchselect || switchreset then return thisbank
-  if joy0fire || joy1fire then return thisbank
+  if switchselect || switchreset then return
+  if joy0fire || joy1fire then return
   gamestate = MODE_SELECT
-  return thisbank
+  return
 
 
 handle_select_pressed
-  if switchselect then return thisbank
+  if switchselect then return
   gamestate = MODE_SELECT
-  return thisbank
+  return
 
 
 handle_reset_pressed
-  if switchreset then return thisbank
+  if switchreset then return
   gamestate = IN_PROGRESS
-  return thisbank
+  return
 
 
 handle_select_action
   if gamestate = MODE_SELECT then max_score_mode = max_score_mode + 1
-  if gamestate = IN_PROGRESS then gosub clear_sounds bank1 : gosub stop_game bank1
+  if gamestate = IN_PROGRESS then gosub clear_sounds : gosub stop_game
 
   if max_score_mode >= NUM_MAX_SCORE_MODES then max_score_mode = 0 : goal_size_mode = goal_size_mode + 1
   if goal_size_mode >= NUM_GOAL_SIZE_MODES then goal_size_mode = 0
 
-  gosub set_mode bank1
+  gosub set_mode
   gamestate = SELECT_PRESSED
-  return thisbank
+  return
 
 
 handle_active_game
   rem Pause Game
-  if switchbw then return thisbank
+  if switchbw then return
 
   rem Restart Game
-  if switchreset then gosub clear_sounds bank1 : gosub start_game bank1 : gamestate = RESET_PRESSED : return thisbank
+  if switchreset then gosub clear_sounds : gosub start_game : gamestate = RESET_PRESSED : return
 
-  if goalcyclecounter > 0 then gosub handle_goal bank1 : return thisbank
-  gosub check_for_goal bank1 : if goalcyclecounter > 0 then return thisbank
+  if goalcyclecounter > 0 then gosub handle_goal : return
+  gosub check_for_goal : if goalcyclecounter > 0 then return
 
   rem Collision handling
-  if collision(ball, player0)    then param0 = player0x : param1 = player0y : param2 = p0firecycle : gosub process_collision_ball_player bank1
-  if collision(ball, player1)    then param0 = player1x : param1 = player1y : param2 = p1firecycle : gosub process_collision_ball_player bank1
-  if collision(ball, playfield)  then gosub process_collision_ball_playfield bank1
-  if collision(player0, player1) then gosub process_players_collision bank1
+  if collision(ball, player0)    then param0 = player0x : param1 = player0y : param2 = p0firecycle : gosub process_collision_ball_player
+  if collision(ball, player1)    then param0 = player1x : param1 = player1y : param2 = p1firecycle : gosub process_collision_ball_player
+  if collision(ball, playfield)  then gosub process_collision_ball_playfield
+  if collision(player0, player1) then gosub process_players_collision
 
   rem Player0 movement
-  if switchleftb then gosub set_p0_player_movement bank1 else gosub set_p0_cpu_movement bank1
-  gosub perform_p0_movement bank1
+  if switchleftb then gosub set_p0_player_movement else gosub set_p0_cpu_movement
+  gosub perform_p0_movement
 
   rem Player1 movement
-  if switchrightb then gosub set_p1_player_movement bank1 else gosub set_p1_cpu_movement bank1
-  gosub perform_p1_movement bank1
+  if switchrightb then gosub set_p1_player_movement else gosub set_p1_cpu_movement
+  gosub perform_p1_movement
 
-  gosub process_ball_movement bank1
+  gosub process_ball_movement
 
-  return thisbank
+  return
 
 
 handle_stopped_game
-  if switchreset then gosub start_game bank1 : gamestate = RESET_PRESSED : return thisbank
-  if joy0fire || joy1fire then gosub start_game bank1 : gamestate = IN_PROGRESS
-  return thisbank
+  if switchreset then gosub start_game : gamestate = RESET_PRESSED : return
+  if joy0fire || joy1fire then gosub start_game : gamestate = IN_PROGRESS
+  return
 
 
   rem ************************************************************
@@ -218,8 +218,8 @@ process_collision_ball_playfield
   if ballx > MAX_BALLX then balldx = BACKWARD
   if bally < MIN_BALLY then balldy = FORWARD
   if bally > MAX_BALLY then balldy = BACKWARD
-  gosub play_ball_bounce_sound bank1
-  return thisbank
+  gosub play_ball_bounce_sound
+  return
 
 
   rem ************************************************************
@@ -230,7 +230,7 @@ process_collision_ball_player
   rem PARAM: param0 - The player's X position
   rem PARAM: param1 - The player's Y position
   rem PARAM: param2 - The player's firecycle
-  if 0 < param2 && param2 < P_MAX_FIRECYCLES then powerballcycle = powerballcycle + POWERBALLCYCLES : gosub play_hit_sound bank1
+  if 0 < param2 && param2 < P_MAX_FIRECYCLES then powerballcycle = powerballcycle + POWERBALLCYCLES : gosub play_hit_sound
   tmp0 = param0 + P_COLLISION_TOLERANCE
   tmp1 = param0 + P_WIDTH - P_COLLISION_TOLERANCE
   if ballx <= tmp0 then balldx = BACKWARD
@@ -239,8 +239,8 @@ process_collision_ball_player
   tmp1 = param1 - P_COLLISION_TOLERANCE
   if bally <= tmp0 then balldy = BACKWARD
   if bally >= tmp1 then balldy = FORWARD
-  gosub play_ball_bounce_sound bank1
-  return thisbank
+  gosub play_ball_bounce_sound
+  return
 
 
   rem ************************************************************************
@@ -258,8 +258,8 @@ process_players_collision
   if player0y < player1y then player0y = player0y - tmp1 : player1y = player1y + tmp0
   if player0y > player1y then player0y = player0y + tmp1 : player1y = player1y - tmp0
 
-  if tmp0 >= HIT_DISPLACEMENT || tmp1 >= HIT_DISPLACEMENT then gosub play_hit_sound bank1 else gosub play_ball_bounce_sound bank1
-  return thisbank
+  if tmp0 >= HIT_DISPLACEMENT || tmp1 >= HIT_DISPLACEMENT then gosub play_hit_sound else gosub play_ball_bounce_sound
+  return
 
 
   rem ************************************************************
@@ -267,14 +267,14 @@ process_players_collision
   rem ************************************************************
 
 process_ball_movement
-  if powerballcycle > 0 then gosub process_single_ball_movement bank1 : powerballcycle = powerballcycle - 1
-  gosub process_single_ball_movement bank1
-  return thisbank
+  if powerballcycle > 0 then gosub process_single_ball_movement : powerballcycle = powerballcycle - 1
+  gosub process_single_ball_movement
+  return
 
 process_single_ball_movement
   ballx = ballx + balldx
   bally = bally + balldy
-  return thisbank
+  return
 
 
   rem ************************************************************
@@ -283,8 +283,8 @@ process_single_ball_movement
 
 set_mode
   max_score = max_scores[max_score_mode]
-  gosub set_playfield bank1
-  return thisbank
+  gosub set_playfield
+  return
 
 
 set_playfield
@@ -340,7 +340,7 @@ end
     ................................
     XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 end
-  return thisbank
+  return
 
 
   rem ************************************************************
@@ -350,8 +350,8 @@ end
 stop_game
   balldx = NO_MOVE
   balldy = NO_MOVE
-  gosub set_ball_mid_position bank1
-  gosub set_players_init_positions bank1
+  gosub set_ball_mid_position
+  gosub set_players_init_positions
 
   pfcolors:
     $06
@@ -394,7 +394,7 @@ end
     $06
     $06
 end
-  return thisbank
+  return
 
 
   rem ************************************************************
@@ -404,7 +404,7 @@ end
 set_ball_mid_position
   ballx = MID_BALLX
   bally = MID_BALLY
-  return thisbank
+  return
 
 
 set_players_init_positions
@@ -450,7 +450,7 @@ end
     %10000001
     %10000001
 end
-  return thisbank
+  return
 
 
   rem ************************************************************
@@ -462,10 +462,10 @@ start_game
   p0score = 0
   p1score = 0
 
-  gosub set_players_init_positions bank1
+  gosub set_players_init_positions
 
   playerkickoff = rand &01
-  gosub kickoff bank1
+  gosub kickoff
 
   pfcolors:
     $0F
@@ -509,7 +509,7 @@ end
     $0F
 end
 
-  return thisbank
+  return
 
 
   rem ************************************************************
@@ -525,7 +525,7 @@ kickoff
   tmp0 = rand &01
   if tmp0 > 0 then balldy = FORWARD else balldy = BACKWARD
 
-  return thisbank
+  return
 
 
   rem ************************************************************
@@ -533,13 +533,13 @@ kickoff
   rem ************************************************************
 
 check_for_goal
-  if bally < min_goal_limits[goal_size_mode] || bally > max_goal_limits[goal_size_mode] then return thisbank
-  if ballx >= MIN_BALLX && ballx <= MAX_BALLX then return thisbank
-  if ballx < MIN_BALLX then gosub record_p1_goal bank1
-  if ballx > MAX_BALLX then gosub record_p0_goal bank1
+  if bally < min_goal_limits[goal_size_mode] || bally > max_goal_limits[goal_size_mode] then return
+  if ballx >= MIN_BALLX && ballx <= MAX_BALLX then return
+  if ballx < MIN_BALLX then gosub record_p1_goal
+  if ballx > MAX_BALLX then gosub record_p0_goal
   goalcyclecounter = GOAL_NO_CYCLES
-  gosub play_goal_sound bank1
-  return thisbank
+  gosub play_goal_sound
+  return
 
 
   rem ************************************************************
@@ -548,9 +548,9 @@ check_for_goal
 
 handle_goal
   goalcyclecounter = goalcyclecounter - 1
-  if goalcyclecounter > 0 then return thisbank
+  if goalcyclecounter > 0 then return
 
-  if p0score >= max_score || p1score >= max_score then gosub stop_game bank1 : gamestate = ENDED : return thisbank
+  if p0score >= max_score || p1score >= max_score then gosub stop_game : gamestate = ENDED : return
 
   pfcolors:
     $0F
@@ -565,9 +565,9 @@ handle_goal
     $0F
     $0F
 end
-  gosub set_players_init_positions bank1
-  gosub kickoff bank1
-  return thisbank
+  gosub set_players_init_positions
+  gosub kickoff
+  return
 
 record_p0_goal
   playerkickoff = 1
@@ -585,7 +585,7 @@ record_p0_goal
     $AE
     $AE
 end
-  return thisbank
+  return
 
 
 record_p1_goal
@@ -604,7 +604,7 @@ record_p1_goal
     $FA
     $FA
 end
-  return thisbank
+  return
 
 
   rem ************************************************************
@@ -619,7 +619,7 @@ set_p0_player_movement
   if joy0right then p0dx = FORWARD
   if joy0up    then p0dy = BACKWARD
   if joy0down  then p0dy = FORWARD
-  return thisbank
+  return
 
 
 set_p0_cpu_movement
@@ -627,17 +627,17 @@ set_p0_cpu_movement
   p0dy = NO_MOVE
   param0 = player0y - P_WIDTH / 2
 
-  if balldx = BACKWARD then param1 = rand : param2 = rand : gosub set_p0_cpu_intercept_ball bank1 : return thisbank
+  if balldx = BACKWARD then param1 = rand : param2 = rand : gosub set_p0_cpu_intercept_ball : return
 
   tmp0 = player0x + P_WIDTH
-  if ballx < tmp0 && bally > param0 then p0dy = BACKWARD : return thisbank
-  if ballx < tmp0 && bally < param0 then p0dy = FORWARD  : return thisbank
+  if ballx < tmp0 && bally > param0 then p0dy = BACKWARD : return
+  if ballx < tmp0 && bally < param0 then p0dy = FORWARD  : return
 
   if player0x > INIT_P0X then p0dx = BACKWARD
   if player0x < INIT_P0X then p0dx = FORWARD
   if player0y > INIT_P0Y then p0dy = BACKWARD
   if player0y < INIT_P0Y then p0dy = FORWARD
-  return thisbank
+  return
 
 
 set_p0_cpu_intercept_ball
@@ -648,13 +648,13 @@ set_p0_cpu_intercept_ball
   tmp0 = param1 & CPU_ADVACE_RANDOMNESS
   if tmp0 >= CPU_ADVACE_THESHOLD then p0dx = FORWARD
 
-  if p0firecycle > P_MAX_FIRECYCLES then p0firecycle = 0 : return thisbank
-  if p0firecycle > 0 then p0firecycle = p0firecycle + 1 : return thisbank
+  if p0firecycle > P_MAX_FIRECYCLES then p0firecycle = 0 : return
+  if p0firecycle > 0 then p0firecycle = p0firecycle + 1 : return
 
   tmp0 = param2 & CPU_ADVACE_RANDOMNESS
   tmp1 = ballx - player0x - P_WIDTH
   if tmp0 >= CPU_ADVACE_THESHOLD && tmp1 = CPU_DISTANCE_HIT then p0firecycle = p0firecycle + 1 else p0firecycle = 0
-  return thisbank
+  return
 
 
 perform_p0_movement
@@ -680,7 +680,7 @@ perform_p0_movement
     %10000001
     %10000001
 end
-  if tmp0 = 1 then return thisbank
+  if tmp0 = 1 then return
 
   if p0dx <> NO_MOVE || p0dy <> NO_MOVE then p0frm = p0frm + 1
   if p0frm >= 20 then p0frm = 0
@@ -712,7 +712,7 @@ end
     %10000001
     %10000001
 end
-  return thisbank
+  return
 
 
   rem ************************************************************
@@ -727,7 +727,7 @@ set_p1_player_movement
   if joy1right then p1dx = FORWARD
   if joy1up    then p1dy = BACKWARD
   if joy1down  then p1dy = FORWARD
-  return thisbank
+  return
 
 
 set_p1_cpu_movement
@@ -735,16 +735,16 @@ set_p1_cpu_movement
   p1dy = NO_MOVE
   param0 = player1y - P_WIDTH / 2
 
-  if balldx = FORWARD then param1 = rand : param2 = rand : gosub set_p1_cpu_intercept_ball bank1 : return thisbank
+  if balldx = FORWARD then param1 = rand : param2 = rand : gosub set_p1_cpu_intercept_ball : return
 
-  if ballx > player1x && bally > param0 then p1dy = BACKWARD : return thisbank
-  if ballx > player1x && bally < param0 then p1dy = FORWARD  : return thisbank
+  if ballx > player1x && bally > param0 then p1dy = BACKWARD : return
+  if ballx > player1x && bally < param0 then p1dy = FORWARD  : return
 
   if player1x > INIT_P1X then p1dx = BACKWARD
   if player1x < INIT_P1X then p1dx = FORWARD
   if player1y > INIT_P1Y then p1dy = BACKWARD
   if player1y < INIT_P1Y then p1dy = FORWARD
-  return thisbank
+  return
 
 
 set_p1_cpu_intercept_ball
@@ -754,13 +754,13 @@ set_p1_cpu_intercept_ball
   tmp0 = param1 & CPU_ADVACE_RANDOMNESS
   if tmp0 >= CPU_ADVACE_THESHOLD then p1dx = BACKWARD
 
-  if p1firecycle > P_MAX_FIRECYCLES then p1firecycle = 0 : return thisbank
-  if p1firecycle > 0 then p1firecycle = p1firecycle + 1 : return thisbank
+  if p1firecycle > P_MAX_FIRECYCLES then p1firecycle = 0 : return
+  if p1firecycle > 0 then p1firecycle = p1firecycle + 1 : return
 
   tmp0 = param2 & CPU_ADVACE_RANDOMNESS
   tmp1 = player1x - ballx
   if tmp0 >= CPU_ADVACE_THESHOLD && tmp1 = CPU_DISTANCE_HIT then p1firecycle = p1firecycle + 1 else p1firecycle = 0
-  return thisbank
+  return
 
 
 perform_p1_movement
@@ -786,7 +786,7 @@ perform_p1_movement
     %10000001
     %10000001
 end
-  if tmp0 = 1 then return thisbank
+  if tmp0 = 1 then return
 
   if p1dx <> NO_MOVE || p1dy <> NO_MOVE then p1frm = p1frm + 1
   if p1frm >= 20 then p1frm = 0
@@ -818,7 +818,7 @@ end
     %10000001
     %10000001
 end
-  return thisbank
+  return
 
 
   rem ************************************************************
@@ -827,30 +827,30 @@ end
 
 handle_sounds
   if aud0timer > 1 then aud0timer = aud0timer - 1
-  if aud0timer = 1 then aud0timer = 0 : gosub clear_sound0 bank1
+  if aud0timer = 1 then aud0timer = 0 : gosub clear_sound0
   if aud1timer > 1 then aud1timer = aud1timer - 1
-  if aud1timer = 1 then aud1timer = 0 : gosub clear_sound1 bank1
-  return thisbank
+  if aud1timer = 1 then aud1timer = 0 : gosub clear_sound1
+  return
 
 
 clear_sounds
-  gosub clear_sound0 bank1
-  gosub clear_sound1 bank1
-  return thisbank
+  gosub clear_sound0
+  gosub clear_sound1
+  return
 
 
 clear_sound0
   AUDV0 = 0
   AUDC0 = 0
   AUDF0 = 0
-  return thisbank
+  return
 
 
 clear_sound1
   AUDV1 = 0
   AUDC1 = 0
   AUDF1 = 0
-  return thisbank
+  return
 
 
 play_ball_bounce_sound
@@ -858,7 +858,7 @@ play_ball_bounce_sound
   AUDC0 = 10
   AUDF0 = 20
   aud0timer = 5
-  return thisbank
+  return
 
 
 play_hit_sound
@@ -866,7 +866,7 @@ play_hit_sound
   AUDC1 = 15
   AUDF1 = 31
   aud1timer = 10
-  return thisbank
+  return
 
 
 play_goal_sound
@@ -874,7 +874,7 @@ play_goal_sound
   AUDC1 = 10
   AUDF1 = 5
   aud1timer = 20
-  return thisbank
+  return
 
 
   rem ************************************************************
