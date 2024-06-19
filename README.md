@@ -14,6 +14,7 @@ Note: You can directly load the rom and play the game in Javatari by following
 any of these links:
 * Basic 4kB version: https://javatari.org/?rom=https://github.com/egar-garcia/buffalo-pongoalie/releases/download/v1.0/buffalo_pongoalie.bin.
 * Extended 8kB version: https://javatari.org/?rom=https://github.com/egar-garcia/buffalo-pongoalie/releases/download/v1.0/buffalo_pongoalie-ext.bin.
+* Extended 8kB version with alternative title screen: https://javatari.org/?rom=https://github.com/egar-garcia/buffalo-pongoalie/releases/download/v1.0/buffalo_pongoalie-ext-altts.bin.
 
 ## Controls
 
