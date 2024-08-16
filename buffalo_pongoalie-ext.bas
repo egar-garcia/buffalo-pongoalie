@@ -1,15 +1,11 @@
   rem Buffalo Pongoalie (Extended)
   rem Author: Egar Garcia
-  rem Last Revision 2024-06-18
-
-  include div_mul.asm
-  include div_mul16.asm
+  rem Last Revision 2024-08-15
 
   set kernel_options player1colors playercolors pfcolors
   set tv ntsc
   set romsize 8k
   set smartbranching on
-
 
   const INITIALIZING          =   0
   const SELECT_PRESSED        =   1
